@@ -1,7 +1,7 @@
-from command import command
+from command import Command
 
-class message:
-    def __init__(self, sender=0, reciever=0, command=command(1), content='debug text'):
+class Message:
+    def __init__(self, sender=0, reciever=0, command=Command(1), content='debug text'):
         self.sender = sender
         self.reciever = reciever
         self.command = command

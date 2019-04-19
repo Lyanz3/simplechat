@@ -1,6 +1,6 @@
 import enum
 
-class command(enum.Enum):
+class Command(enum.Enum):
     NONE = 1
     WHISPER = 2
     USERS = 3
