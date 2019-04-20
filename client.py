@@ -61,7 +61,11 @@ if  __name__ =='__main__':
             Client.sendable_queue.put(Message(Client.client_id, 70000, Command(3),'giff message'))
             print('Getting user list from server...')
         elif user_input.split(' ')[0] == '/w': # if the first part of a string separated by spaces is /w
-            pass
+            reciever = user_input.split(' ')[1]  # use to find reciever
+            payload = ' '.join(user_input.split(' ')[2:]) #get everything after the reciever
+            Client.sendable_queue.put(Message(Client.client_id, reciever, Command(2), payload))
+            continue
+
         message = Message(Client.client_id, 0, Command(1), user_input)
         Client.sendable_queue.put(message)
 
