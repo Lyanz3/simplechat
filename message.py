@@ -9,7 +9,18 @@ class Message:
 
     def parse(self, raw_protocol):
         try:
-            self.sender, self.reciever, self.command, self.content = raw_protocol.split(',', 3)
+            parts = raw_protocol.split(',', 3)
+            self.sender = parts[0]
+            self.reciever = parts[1]
+            if 'Command.NONE' == parts[2]:
+                self.command = Command(1)
+            if 'Command.WHISPER' == parts[2]:
+                self.command = Command(2)
+            if 'Command.USERS' == parts[2]:
+                self.command = Command(3)
+            if 'Command.LEAVE' == parts[2]:
+                self.command = Command(4)
+            self.content = parts[3]
         except:
             pass
 

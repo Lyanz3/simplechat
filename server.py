@@ -7,6 +7,7 @@ import queue
 class Server():
     bind_ip = '127.0.0.1' #127.0.0.1:9999
     bind_port = 9999
+    connected_clients = []
     message_queue = queue.Queue()
     quit = False
 
@@ -17,11 +18,12 @@ class Connection(Thread):
         self.addr = address
         self.sock.send('{}'.format(self.addr[1]).encode()) # send id to client
         print('{}:{} has connected to the server!'.format(address[0], address[1]))
+        Server.connected_clients.append(str(address[1]))
         self.start()
 
     def send(self):
         for i in range(0, Server.message_queue.qsize()):
-            message = Server.message_queue.get()
+            message = Server.message_queue.get() # grab next message in queue
             if message.sender == str(self.addr[1]):
                 Server.message_queue.put(message)
                 continue
@@ -33,11 +35,23 @@ class Connection(Thread):
                 self.sock.send(message.sendable().encode()) # encode and send
                 continue # dont put it back in
 
-
     def recieve(self):
         request = self.sock.recv(4096).decode()
         recieved_message = Message() # create a message object to store
         recieved_message.parse(request) # parse message into usable format
+
+        if recieved_message.reciever == '70000':
+            if recieved_message.command == Command(1): pass
+            elif recieved_message.command == Command(2):
+                pass # do whisper stuff
+            elif recieved_message.command == Command(3): #user list
+                print('just to make sure')
+                recieved_message.content = 'List of Users: ' + ', '.join(Server.connected_clients)
+                recieved_message.reciever = recieved_message.sender
+                recieved_message.sender = '70000'
+            elif recieved_message.command == Command(4): #leave
+                Server.connected_clients.remove(recieved_message.sender)
+
         Server.message_queue.put(recieved_message) # put the message into the queue
         print('[{}->{}]: {}'.format(recieved_message.sender, recieved_message.reciever, recieved_message.content))
 

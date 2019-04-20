@@ -52,11 +52,14 @@ if  __name__ =='__main__':
             message = Client.recieved_queue.get()
             print('[{}]: {}'.format(message.sender, message.content))
 
-        user_input = input('-> ')
+        user_input = input('-> ') # get user input
         if user_input == '/leave':
-            pass
-        elif user_input == '/users':
-            pass
+            Client.sendable_queue.put(Message(Client.client_id, 0, Command(4), '{} is leaving the server!'.format(Client.client_id)))
+            Client.quit = True
+            print('Quit Sucessful!')
+        elif user_input == '/users': #displays all usernames
+            Client.sendable_queue.put(Message(Client.client_id, 70000, Command(3),'giff message'))
+            print('Getting user list from server...')
         elif user_input.split(' ')[0] == '/w': # if the first part of a string separated by spaces is /w
             pass
         message = Message(Client.client_id, 0, Command(1), user_input)
