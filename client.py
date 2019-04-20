@@ -53,6 +53,12 @@ if  __name__ =='__main__':
             print('[{}]: {}'.format(message.sender, message.content))
 
         user_input = input('-> ')
+        if user_input == '/leave':
+            pass
+        elif user_input == '/users':
+            pass
+        elif user_input.split(' ')[0] == '/w': # if the first part of a string separated by spaces is /w
+            pass
         message = Message(Client.client_id, 0, Command(1), user_input)
         Client.sendable_queue.put(message)
 
