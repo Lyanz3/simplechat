@@ -57,9 +57,11 @@ if  __name__ =='__main__':
             Client.sendable_queue.put(Message(Client.client_id, 0, Command(4), '{} is leaving the server!'.format(Client.client_id)))
             Client.quit = True
             print('Quit Sucessful!')
+            continue
         elif user_input == '/users': #displays all usernames
             Client.sendable_queue.put(Message(Client.client_id, 70000, Command(3),'giff message'))
             print('Getting user list from server...')
+            continue
         elif user_input.split(' ')[0] == '/w': # if the first part of a string separated by spaces is /w
             reciever = user_input.split(' ')[1]  # use to find reciever
             payload = ' '.join(user_input.split(' ')[2:]) #get everything after the reciever

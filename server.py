@@ -29,7 +29,7 @@ class Connection(Thread):
                 continue
             elif message.reciever == '0':
                 self.sock.send(message.sendable().encode()) # encode and send
-                Server.message_queue.put(message)
+                #Server.message_queue.put(message)
                 continue
             elif message.reciever == str(self.addr[1]):
                 self.sock.send(message.sendable().encode()) # encode and send
@@ -41,11 +41,11 @@ class Connection(Thread):
         recieved_message.parse(request) # parse message into usable format
 
         if recieved_message.reciever == '70000':
-            if recieved_message.command == Command(1): pass
+            if recieved_message.command == Command(1):
+                pass # no command
             elif recieved_message.command == Command(2):
                 pass # do whisper stuff
             elif recieved_message.command == Command(3): #user list
-                print('just to make sure')
                 recieved_message.content = 'List of Users: ' + ', '.join(Server.connected_clients)
                 recieved_message.reciever = recieved_message.sender
                 recieved_message.sender = '70000'
