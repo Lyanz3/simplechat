@@ -1,13 +1,14 @@
 import socket
+from queue import Queue
 from threading import *
-from message import Message
 from command import Command
-import queue
+from message import Message
 
 class Server():
     bind_ip = '127.0.0.1' #127.0.0.1:9999
     bind_port = 9999
-    message_queue = queue.Queue()
+    connected_clients = []
+    message_queue = Queue()
     quit = False
 
 class Connection(Thread):
@@ -17,27 +18,49 @@ class Connection(Thread):
         self.addr = address
         self.sock.send('{}'.format(self.addr[1]).encode()) # send id to client
         print('{}:{} has connected to the server!'.format(address[0], address[1]))
+        Server.connected_clients.append(str(address[1]))
         self.start()
 
     def send(self):
         for i in range(0, Server.message_queue.qsize()):
-            message = Server.message_queue.get()
+            message = Server.message_queue.get() # grab next message in queue
             if message.sender == str(self.addr[1]):
                 Server.message_queue.put(message)
                 continue
             elif message.reciever == '0':
                 self.sock.send(message.sendable().encode()) # encode and send
-                Server.message_queue.put(message)
                 continue
             elif message.reciever == str(self.addr[1]):
                 self.sock.send(message.sendable().encode()) # encode and send
                 continue # dont put it back in
 
-
     def recieve(self):
-        request = self.sock.recv(4096).decode()
+        try:
+            request = self.sock.recv(4096).decode()
+        except:
+            pass # dont complain if socket fails
         recieved_message = Message() # create a message object to store
         recieved_message.parse(request) # parse message into usable format
+
+        # drop any bad packets
+        if recieved_message.sender == '':
+            return
+        if recieved_message.reciever == '':
+            return
+
+        if recieved_message.reciever == '70000':
+            if recieved_message.command == Command(1):
+                pass # no command
+            elif recieved_message.command == Command(2):
+                pass # do whisper stuff
+            elif recieved_message.command == Command(3): #user list
+                print('[{}->{}]: {}'.format(recieved_message.sender, recieved_message.reciever, recieved_message.content))
+                recieved_message.content = 'List of Users: ' + ', '.join(Server.connected_clients)
+                recieved_message.reciever = recieved_message.sender
+                recieved_message.sender = '70000'
+            elif recieved_message.command == Command(4): #leave
+                Server.connected_clients.remove(recieved_message.sender)
+
         Server.message_queue.put(recieved_message) # put the message into the queue
         print('[{}->{}]: {}'.format(recieved_message.sender, recieved_message.reciever, recieved_message.content))
 

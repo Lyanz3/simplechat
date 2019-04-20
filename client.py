@@ -22,7 +22,10 @@ class Connection(Thread):
             self.sock.send(sending_message.sendable().encode()) # encode and send
 
     def recieve(self):
-        response = self.sock.recv(4096).decode() # response from server
+        try:
+            response = self.sock.recv(4096).decode() # response from server
+        except:
+            pass
         recieved_message = Message() # create a message object to store
         recieved_message.parse(response) # parse message into usable format
         Client.recieved_queue.put(recieved_message) # add the message to the message queue
@@ -30,7 +33,7 @@ class Connection(Thread):
     def run(self): # some weird stuff with more threads because .recv blocks
         t_recieve = Thread(target = self.recieve, args = [])
         t_recieve.start()
-        while not Client.quit:
+        while not Client.quit or not Client.sendable_queue.empty():
             self.send()
             if not t_recieve.is_alive():
                 t_recieve = Thread(target = self.recieve, args = [])
@@ -52,7 +55,22 @@ if  __name__ =='__main__':
             message = Client.recieved_queue.get()
             print('[{}]: {}'.format(message.sender, message.content))
 
-        user_input = input('-> ')
+        user_input = input('-> ') # get user input
+        if user_input == '': continue
+        if user_input == '/leave':
+            Client.sendable_queue.put(Message(Client.client_id, 0, Command(4), '{} is leaving the server!'.format(Client.client_id)))
+            Client.quit = True
+            continue
+        elif user_input == '/users': #displays all usernames
+            Client.sendable_queue.put(Message(Client.client_id, 70000, Command(3),'giff message'))
+            print('Getting user list from server...')
+            continue
+        elif user_input.split(' ')[0] == '/w': # if the first part of a string separated by spaces is /w
+            reciever = user_input.split(' ')[1]  # use to find reciever
+            payload = ' '.join(user_input.split(' ')[2:]) #get everything after the reciever
+            Client.sendable_queue.put(Message(Client.client_id, reciever, Command(2), payload))
+            continue
+
         message = Message(Client.client_id, 0, Command(1), user_input)
         Client.sendable_queue.put(message)
 
