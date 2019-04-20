@@ -8,7 +8,10 @@ class Message:
         self.content = content
 
     def parse(self, raw_protocol):
-        self.sender, self.reciever, self.command, self.content = raw_protocol.split(',', 3)
+        try:
+            self.sender, self.reciever, self.command, self.content = raw_protocol.split(',', 3)
+        except:
+            pass
 
     def sendable(self):
         return('{},{},{},{}'.format(self.sender, self.reciever, self.command, self.content))
